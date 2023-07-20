@@ -1,0 +1,38 @@
+# .gitignore
+
+# Next.js build output
+.next/
+out/
+
+# Node.js build output
+node_modules/
+npm-debug.log*
+
+# Vercel build output
+.vercel/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.*.local.json
+
+# macOS system files
+.DS_Store
+
+# Editor folders and files
+.vscode/
+*.swp
+*.swo
+*.swn
+*.bak
+*.orig
+*.sublime*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
