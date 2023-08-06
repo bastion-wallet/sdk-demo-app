@@ -1,7 +1,7 @@
 import { ParticleNetwork, WalletEntryPosition } from "@particle-network/auth";
 import { ParticleProvider } from "@particle-network/provider";
 import React, { useState } from "react";
-import { ethers } from "ethers";
+import { ethers, Contract } from "ethers";
 import { Bastion } from "@bastion/sdk";
 
 export default function LoginPage() {
@@ -10,10 +10,13 @@ export default function LoginPage() {
 		baseUrl: "https://jsonplaceholder.typicode.com",
 	});
 
+	// const liginWithMetamask =
+
 	const loginWithProvider = async (loginProvider: string) => {
 		console.log("Inside the function");
 
 		try {
+			//Step 1 - set up particle network
 			const particle = new ParticleNetwork({
 				projectId: process.env.NEXT_PUBLIC_PARTICLE_PROJECT_ID as string,
 				clientKey: process.env.NEXT_PUBLIC_PARTICLE_CLIENT_KEY as string,
@@ -25,74 +28,21 @@ export default function LoginPage() {
 			const userInfo = await particle.auth.login();
 			console.log("Logged in user:", userInfo);
 			const particleProvider = new ParticleProvider(particle.auth);
-			const ethersProvider = new ethers.providers.Web3Provider(particleProvider, "any");
-			console.log("Logged in user:", await ethersProvider.getSigner().getAddress());
-			// const getSmartAccountAddress = await bastion.smartWallet.getSmartAccountAddress(ethersProvider);
+			// const ethersProvider = new ethers.providers.Web3Provider(particleProvider, "any");
+			// console.log("Logged in user:", await ethersProvider.getSigner().getAddress());
 
-			// const smartAccountCreated = await bastion.smartWallet.initSmartAccount(ethersProvider);
+			//Step 2 - Init the bastion signer
+			const bastionConnect = await bastion.bastionSigner();
+			bastionConnect.init(particleProvider);
 
-			// const txReceipt = await bastion.smartWallet.sendNativeCurrency(
-			// 	ethersProvider,
-			// 	"0x841056F279582d1dfD586c3C77e7821821B5B510",
-			// 	11,
-			// 	{
-			// 		privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY || "",
-			// 		rpcUrl: process.env.NEXT_PUBLIC_RPC_URL1 || "",
-			// 		chainId: 80001,
-			// 	},
-			// 	"0x",
-			// 	process.env.NEXT_PUBLIC_PIMLICO_API_KEY
-			// );
+			//Step 3 - use it like normal ethers signer / metamask signer
+			const contractAddress = "0xEAC57C1413A2308cd03eF3CEa5c9224487825341";
+			const contractABI = ["function safeMint(address to) public"];
 
-			// await bastion.smartWallet.getNativeCurrencyBalance(ethersProvider);
+			const address = await bastionConnect.getAddress();
+			const nftContract = new Contract(contractAddress, contractABI, bastionConnect);
 
-			// await bastion.smartWallet.getERC20TokenBalance(ethersProvider, "0x326C977E6efc84E512bB9C30f76E30c160eD06FB");
-
-			// await bastion.smartWallet.getERC20TokenBalanceBatch(ethersProvider, [
-			// 	"0xe11A86849d99F524cAC3E7A0Ec1241828e332C62",
-			// 	"0x326C977E6efc84E512bB9C30f76E30c160eD06FB",
-			// ]);
-
-			// await bastion.smartWallet.isSmartAccountDeployed(ethersProvider);
-
-			// const txReceipt = await bastion.smartWallet.sendNativeCurrencyGasless(
-			// 	ethersProvider,
-			// 	"0x841056F279582d1dfD586c3C77e7821821B5B510",
-			// 	12,
-			// 	{
-			// 		privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY || "",
-			// 		rpcUrl: process.env.NEXT_PUBLIC_RPC_URL1 || "",
-			// 		chainId: 80001,
-			// 	},
-			// 	"0x",
-			// 	process.env.NEXT_PUBLIC_PIMLICO_API_KEY
-			// );
-
-			// const txReceipt = await bastion.smartWallet.sendTokens(
-			// 	ethersProvider,
-			// 	"0x841056F279582d1dfD586c3C77e7821821B5B510",
-			// 	123,
-			// 	"0xe11A86849d99F524cAC3E7A0Ec1241828e332C62",
-			// 	{
-			// 		privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY || "",
-			// 		rpcUrl: process.env.NEXT_PUBLIC_RPC_URL1 || "",
-			// 		chainId: 80001,
-			// 	},
-			// 	process.env.NEXT_PUBLIC_PIMLICO_API_KEY
-			// );
-
-			const txReceipt = await bastion.smartWallet.sendTokensGasless(
-				ethersProvider,
-				"0x841056F279582d1dfD586c3C77e7821821B5B510",
-				321,
-				"0xe11A86849d99F524cAC3E7A0Ec1241828e332C62",
-				{
-					privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY || "",
-					rpcUrl: process.env.NEXT_PUBLIC_RPC_URL1 || "",
-					chainId: 80001,
-				},
-				process.env.NEXT_PUBLIC_PIMLICO_API_KEY
-			);
+			const res = await nftContract.safeMint(address);
 		} catch (e) {
 			console.error(e);
 		}

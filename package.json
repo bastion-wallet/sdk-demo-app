@@ -9,13 +9,14 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
-		"@bastion/sdk": "file:..",
+		"@bastion/sdk": "file:../bastion",
 		"@particle-network/auth": "^0.14.4",
 		"@particle-network/provider": "^0.14.4",
 		"@types/node": "20.4.2",
 		"@types/react": "18.2.15",
 		"@types/react-dom": "18.2.7",
 		"autoprefixer": "10.4.14",
+		"ethers": "^5.7.2",
 		"next": "13.4.10",
 		"postcss": "8.4.26",
 		"react": "18.2.0",
