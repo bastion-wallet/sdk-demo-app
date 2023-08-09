@@ -2,13 +2,15 @@ import { ParticleNetwork, WalletEntryPosition } from "@particle-network/auth";
 import { ParticleProvider } from "@particle-network/provider";
 import React, { useState } from "react";
 import { ethers, Contract } from "ethers";
-import { Bastion } from "@bastion/sdk";
+import Bastion from "../sdk/src";
 
 export default function LoginPage() {
-	const bastion = new Bastion({
-		apiKey: "your-api-key",
-		baseUrl: "https://jsonplaceholder.typicode.com",
-	});
+	const bastion = new Bastion(
+		// {
+		// 	apiKey: "your-api-key",
+		// 	baseUrl: "https://jsonplaceholder.typicode.com",
+		// }
+	);
 
 	// const liginWithMetamask =
 
@@ -28,12 +30,14 @@ export default function LoginPage() {
 			const userInfo = await particle.auth.login();
 			console.log("Logged in user:", userInfo);
 			const particleProvider = new ParticleProvider(particle.auth);
-			// const ethersProvider = new ethers.providers.Web3Provider(particleProvider, "any");
+			const ethersProvider = new ethers.providers.Web3Provider(particleProvider, "any");
 			// console.log("Logged in user:", await ethersProvider.getSigner().getAddress());
 
 			//Step 2 - Init the bastion signer
-			const bastionConnect = await bastion.bastionSigner();
-			bastionConnect.init(particleProvider);
+			const bastionConnect = await bastion.bastionConnect;
+			// Note: need to add option here
+			bastionConnect.init(ethersProvider, {chainId: 80001});
+			console.log(bastionConnect, "bastionConnect")
 
 			//Step 3 - use it like normal ethers signer / metamask signer
 			const contractAddress = "0xEAC57C1413A2308cd03eF3CEa5c9224487825341";
