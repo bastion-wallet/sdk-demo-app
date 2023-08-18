@@ -21,7 +21,8 @@ export default function Home() {
   const bastion = new Bastion();
   const [ethersProvider, setEthersProvider] =
     useState<ethers.providers.Web3Provider>();
-  const [address, setAddress] = useState<string>();
+  const [address, setAddress] = useState<string>("");
+  const [bastionConnect, setBastionConnect] = useState<any>();
 
   const loginWithParticleAuth = async () => {
     console.log("Inside the function");
@@ -48,16 +49,42 @@ export default function Home() {
       setEthersProvider(tempProvider);
       setAddress(await tempProvider.getSigner().getAddress());
       console.log(await tempProvider.getSigner().getAddress());
+      const res = await connectBastionWallet(tempProvider);
     } catch (e) {
       console.error(e);
     }
   };
-  console.log(address);
+  console.log(ethersProvider, "ethersProvider");
+
+  const connectBastionWallet = async (tempProvider: any) => {
+    try {
+      //Step 2 - Init the bastion signer
+      const bastionConnect = await bastion.bastionConnect;
+      // const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL1);
+      // ethersProvider = new ethers.providers.Web3Provider(provider, "any");
+      // Note: need to add option here
+      // @ts-ignore
+      await bastionConnect.init(tempProvider, {
+        privateKey: "",
+        rpcUrl: "",
+        chainId: 421613,
+      });
+      // setEthersProvider(bastionConnect)
+      setBastionConnect(bastionConnect);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className={`${poppins.className}`}>
       <Header />
       {address ? (
-        <Dashboard address={address} />
+        <Dashboard
+          address={address}
+          ethersProvider={ethersProvider}
+          bastionConnect={bastionConnect}
+        />
       ) : (
         <Login loginWithParticleAuth={loginWithParticleAuth} />
       )}
