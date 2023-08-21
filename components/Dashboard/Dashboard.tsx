@@ -1,10 +1,17 @@
 import { ethers, Contract } from "ethers";
+import { useEffect, useState } from "react";
+import AccountInfo from "./AccountInfo";
+import TransactionStatus from "./TransactionStatus";
 
 const Dashboard = ({ address, ethersProvider, bastionConnect }: any) => {
   console.log(ethersProvider, "ETHERS PROVIDER");
   console.log(bastionConnect, "BASTION CONNECT");
+
   const mintNFT = async () => {
-    console.log("clicked");
+    console.log("clicked, passed address", address);
+    const signer = await bastionConnect.getSigner();
+
+    console.log(signer, "bastionConnect signer");
     try {
       //Step 3 - use it like normal ethers signer / metamask signer
       const contractAddress = "0xEAC57C1413A2308cd03eF3CEa5c9224487825341";
@@ -42,51 +49,9 @@ const Dashboard = ({ address, ethersProvider, bastionConnect }: any) => {
       <div className="rounded-2xl bg-gradient-to-r from-[#6C1EB0] to-[#DE389F] p-1 min-w-full max-w-screen-lg">
         <div className="rounded-2xl bg-gradient-to-b p-10 from-[#260B2F] to-[#1B0821] min-w-full max-w-screen-lg">
           <div className="w-full flex container justify-between items-center">
-            <div className="w-full mr-12">
-              <p className="text-[#DE389F] text-lg mb-6">Account Info</p>
-              <div>
-                <div className="flex justify-between mb-4">
-                  <p>External Account Address</p>
-                  <p>{address}</p>
-                </div>
-                <div className="flex justify-between mb-4">
-                  <p>Smart Wallet Address</p>
-                  <p>0x1234</p>
-                </div>
-                <div className="flex justify-between mb-4">
-                  <p>Smart Wallet Nonce</p>
-                  <p>2</p>
-                </div>
-                <div className="flex justify-between mb-4">
-                  <p>Smart Wallet Balance</p>
-                  <p>0.01 ETH</p>
-                </div>
-                <div className="flex justify-between mb-4">
-                  <p>Chain</p>
-                  <p>Arbitrum Goerli</p>
-                </div>
-              </div>
-            </div>
-            <div className="absolute left-1/2 -ml-0.5 w-0.5 h-40 mr-12 bg-gray-600"></div>
-            <div className="w-full ml-12">
-              <p className="text-[#DE389F] text-lg mb-6">Demo Results</p>
-              <div className="flex justify-between mb-4">
-                <p>Action</p>
-                <p>Minting NFT</p>
-              </div>
-              <div className="flex justify-between mb-4">
-                <p>UserOp Hash</p>
-                <p>0x1234</p>
-              </div>
-              <div className="flex justify-between mb-4">
-                <p>Txn Hash</p>
-                <p>0x1234</p>
-              </div>
-              <div className="flex justify-between mb-4">
-                <p>Status</p>
-                <p>Successful</p>
-              </div>
-            </div>
+            <AccountInfo bastionConnect={bastionConnect} address={address} />
+            <div className="w-0.5 h-60 bg-gray-600"></div>
+            <TransactionStatus />
           </div>
           <hr className="my-16 h-0.5 border-gray-600" />
           <div className="w-full flex container justify-between items-center h-32">
