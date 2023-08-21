@@ -1,6 +1,6 @@
 const Footer = () => {
   return (
-    <footer className="rounded-lg m-4 fixed bottom-0 left-0 w-full">
+    <footer className=" container rounded-lg my-4 fixed bottom-0 left-2/4 transform -translate-x-2/4 mx-auto w-full">
       <div className="w-full mx-auto p-4 md:py-8">
         <div className="flex items-center justify-between">
           <img src="/logo.png" className="h-8 mr-3" alt="Bastion Logo" />
