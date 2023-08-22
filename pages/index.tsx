@@ -1,118 +1,163 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import Image from "next/image";
+import { Poppins } from "next/font/google";
+//COMPONENTS
+import Header from "@/components/Header/Header";
+import Footer from "@/components/Footer/Footer";
+import Login from "@/components/Login/Login";
+import Dashboard from "@/components/Dashboard/Dashboard";
 
-const inter = Inter({ subsets: ['latin'] })
+import { ParticleNetwork } from "@particle-network/auth";
+import { Web3Auth } from "@web3auth/modal";
+import { CHAIN_NAMESPACES, CONNECTED_EVENT_DATA } from "@web3auth/base";
+import { ADAPTER_EVENTS } from "@web3auth/base";
+
+import { ethers, Contract } from "ethers";
+//@ts-ignore
+import { Bastion } from "@bastion-wallet/sdk";
+import { useState } from "react";
+import { ParticleProvider } from "@particle-network/provider";
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-poppins",
+});
 
 export default function Home() {
+  const bastion = new Bastion();
+  const [ethersProvider, setEthersProvider] =
+    useState<ethers.providers.Web3Provider>();
+  const [address, setAddress] = useState<string>("");
+  const [bastionConnect, setBastionConnect] = useState<any>();
+
+  const loginWithParticleAuth = async () => {
+    console.log("Inside the function");
+
+    try {
+      //Step 1 - set up particle network
+      const particle = new ParticleNetwork({
+        projectId: process.env.NEXT_PUBLIC_PARTICLE_PROJECT_ID as string,
+        clientKey: process.env.NEXT_PUBLIC_PARTICLE_CLIENT_KEY as string,
+        appId: process.env.NEXT_PUBLIC_PARTICLE_APP_ID as string,
+        chainName: "arbitrum",
+        chainId: 421613,
+      });
+      console.log("Particle: ", particle);
+      const userInfo = await particle.auth.login();
+      console.log("Logged in user:", userInfo);
+      const particleProvider = new ParticleProvider(particle.auth);
+
+      const tempProvider = new ethers.providers.Web3Provider(
+        particleProvider,
+        "any"
+      );
+
+      setEthersProvider(tempProvider);
+      setAddress(await tempProvider.getSigner().getAddress());
+      console.log(await tempProvider.getSigner().getAddress());
+      const res = await connectBastionWallet(tempProvider);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loginWithWeb3Auth = async () => {
+    try {
+      const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID || "";
+      //Initialize within your constructor
+      const web3auth = new Web3Auth({
+        clientId,
+        // "", // Get your Client ID from Web3Auth Dashboard
+        chainConfig: {
+          chainNamespace: CHAIN_NAMESPACES.EIP155,
+          chainId: "0x66eed", // Please use 0x5 for Goerli Testnet
+          rpcTarget: "https://rpc.goerli.arbitrum.gateway.fm",
+        },
+      });
+      const res0 = await subscribeAuthEvents(web3auth);
+      const res1 = await web3auth.initModal();
+      const web3authProvider = await web3auth.connect();
+      const res3 = await web3auth.getUserInfo();
+      console.log(web3auth.provider, "rpivder");
+      if (web3authProvider) {
+        const tempProvider = new ethers.providers.Web3Provider(
+          web3authProvider,
+          "any"
+        );
+
+        console.log(
+          tempProvider,
+          "tempProvider",
+          await tempProvider.getSigner().getAddress()
+        );
+      }
+
+      console.log(res0, "res 0");
+      console.log(res1, "res 1");
+      // console.log(res2, "res 2");
+      console.log(res3, "res 3");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // subscribe to lifecycle events emitted by web3auth
+  const subscribeAuthEvents = (web3auth: Web3Auth) => {
+    web3auth.on(ADAPTER_EVENTS.CONNECTED, (data: CONNECTED_EVENT_DATA) => {
+      console.log("connected to wallet", data);
+      // web3auth.provider will be available here after user is connected
+    });
+    web3auth.on(ADAPTER_EVENTS.CONNECTING, () => {
+      console.log("connecting");
+    });
+    web3auth.on(ADAPTER_EVENTS.DISCONNECTED, () => {
+      console.log("disconnected");
+    });
+    web3auth.on(ADAPTER_EVENTS.ERRORED, (error) => {
+      console.log("error", error);
+    });
+    web3auth.on(ADAPTER_EVENTS.ERRORED, (error) => {
+      console.log("error", error);
+    });
+  };
+
+  console.log(ethersProvider, "ethersProvider");
+
+  const connectBastionWallet = async (tempProvider: any) => {
+    try {
+      //Step 2 - Init the bastion signer
+      const bastionConnect = await bastion.bastionConnect;
+      // const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL1);
+      // ethersProvider = new ethers.providers.Web3Provider(provider, "any");
+      // Note: need to add option here
+      // @ts-ignore
+      await bastionConnect.init(tempProvider, {
+        privateKey: "",
+        rpcUrl: "",
+        chainId: 421613,
+      });
+      // setEthersProvider(bastionConnect)
+      setBastionConnect(bastionConnect);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+    <div className={`${poppins.className}`}>
+      <Header />
+      {address ? (
+        <Dashboard
+          address={address}
+          ethersProvider={ethersProvider}
+          bastionConnect={bastionConnect}
         />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+      ) : (
+        <Login
+          loginWithParticleAuth={loginWithParticleAuth}
+          loginWithWeb3Auth={loginWithWeb3Auth}
+        />
+      )}
+      <Footer />
+    </div>
+  );
 }
