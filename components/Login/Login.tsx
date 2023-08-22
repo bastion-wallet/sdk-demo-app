@@ -1,6 +1,6 @@
 import CTA from "../CTA/CTA";
 
-const Login = ({ loginWithParticleAuth }: any) => {
+const Login = ({ loginWithParticleAuth, loginWithWeb3Auth }: any) => {
   return (
     <main
       className={`flex min-h-[calc(100vh-76px)] flex-col items-center justify-between p-24`}
@@ -26,7 +26,7 @@ const Login = ({ loginWithParticleAuth }: any) => {
             <img src={"/particle.png"} alt="" className="mr-2" />
             <p className="mb-0">Particle Auth</p>
           </CTA>
-          <CTA>
+          <CTA onClick={loginWithWeb3Auth}>
             <img src={"/web3auth.png"} alt="" className="mr-2" />
 
             <p className="mb-0">Web3 Auth</p>

@@ -7,7 +7,12 @@ import Login from "@/components/Login/Login";
 import Dashboard from "@/components/Dashboard/Dashboard";
 
 import { ParticleNetwork } from "@particle-network/auth";
+import { Web3Auth } from "@web3auth/modal";
+import { CHAIN_NAMESPACES, CONNECTED_EVENT_DATA } from "@web3auth/base";
+import { ADAPTER_EVENTS } from "@web3auth/base";
+
 import { ethers, Contract } from "ethers";
+//@ts-ignore
 import { Bastion } from "@bastion-wallet/sdk";
 import { useState } from "react";
 import { ParticleProvider } from "@particle-network/provider";
@@ -54,6 +59,67 @@ export default function Home() {
       console.error(e);
     }
   };
+
+  const loginWithWeb3Auth = async () => {
+    try {
+      const clientId = process.env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID || "";
+      //Initialize within your constructor
+      const web3auth = new Web3Auth({
+        clientId,
+        // "", // Get your Client ID from Web3Auth Dashboard
+        chainConfig: {
+          chainNamespace: CHAIN_NAMESPACES.EIP155,
+          chainId: "0x66eed", // Please use 0x5 for Goerli Testnet
+          rpcTarget: "https://rpc.goerli.arbitrum.gateway.fm",
+        },
+      });
+      const res0 = await subscribeAuthEvents(web3auth);
+      const res1 = await web3auth.initModal();
+      const web3authProvider = await web3auth.connect();
+      const res3 = await web3auth.getUserInfo();
+      console.log(web3auth.provider, "rpivder");
+      if (web3authProvider) {
+        const tempProvider = new ethers.providers.Web3Provider(
+          web3authProvider,
+          "any"
+        );
+
+        console.log(
+          tempProvider,
+          "tempProvider",
+          await tempProvider.getSigner().getAddress()
+        );
+      }
+
+      console.log(res0, "res 0");
+      console.log(res1, "res 1");
+      // console.log(res2, "res 2");
+      console.log(res3, "res 3");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // subscribe to lifecycle events emitted by web3auth
+  const subscribeAuthEvents = (web3auth: Web3Auth) => {
+    web3auth.on(ADAPTER_EVENTS.CONNECTED, (data: CONNECTED_EVENT_DATA) => {
+      console.log("connected to wallet", data);
+      // web3auth.provider will be available here after user is connected
+    });
+    web3auth.on(ADAPTER_EVENTS.CONNECTING, () => {
+      console.log("connecting");
+    });
+    web3auth.on(ADAPTER_EVENTS.DISCONNECTED, () => {
+      console.log("disconnected");
+    });
+    web3auth.on(ADAPTER_EVENTS.ERRORED, (error) => {
+      console.log("error", error);
+    });
+    web3auth.on(ADAPTER_EVENTS.ERRORED, (error) => {
+      console.log("error", error);
+    });
+  };
+
   console.log(ethersProvider, "ethersProvider");
 
   const connectBastionWallet = async (tempProvider: any) => {
@@ -86,7 +152,10 @@ export default function Home() {
           bastionConnect={bastionConnect}
         />
       ) : (
-        <Login loginWithParticleAuth={loginWithParticleAuth} />
+        <Login
+          loginWithParticleAuth={loginWithParticleAuth}
+          loginWithWeb3Auth={loginWithWeb3Auth}
+        />
       )}
       <Footer />
     </div>
