@@ -8,7 +8,7 @@ import Dashboard from "@/components/Dashboard/Dashboard";
 
 import { ParticleNetwork } from "@particle-network/auth";
 import { ethers, Contract } from "ethers";
-import { Bastion } from "../sdk/src";
+import { Bastion } from "@bastion-wallet/sdk";
 import { useState } from "react";
 import { ParticleProvider } from "@particle-network/provider";
 const poppins = Poppins({

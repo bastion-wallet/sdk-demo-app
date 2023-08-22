@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import { ethers } from "ethers";
 const AccountInfo = ({ bastionConnect, address }: any) => {
   const [smartWalletAddress, setSmartWalletAddress] = useState("");
   const [smartWalletNonce, setSmartWalletNonce] = useState("");
@@ -17,6 +17,10 @@ const AccountInfo = ({ bastionConnect, address }: any) => {
           const nonce = await signer?.provider?.getTransactionCount(address);
           setSmartWalletNonce(nonce);
           const balance = await signer?.provider?.getBalance(address);
+          if (balance) {
+            const formattedBalance = ethers.utils.formatEther(balance);
+            setSmartWalletBalance(formattedBalance);
+          }
           setSmartWalletBalance(balance);
           const chainName = await signer?.provider?._network?.name;
           if (chainName) {
