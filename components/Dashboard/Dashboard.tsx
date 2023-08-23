@@ -6,6 +6,7 @@ import TransactionStatus from "./TransactionStatus";
 const Dashboard = ({ address, ethersProvider, bastionConnect }: any) => {
   console.log(ethersProvider, "ETHERS PROVIDER");
   console.log(bastionConnect, "BASTION CONNECT");
+  const [userOpHash, setUserOpHash] = useState("");
 
   const mintNFT = async () => {
     console.log("clicked, passed address", address);
@@ -23,9 +24,7 @@ const Dashboard = ({ address, ethersProvider, bastionConnect }: any) => {
         bastionConnect
       );
 
-      const res = await nftContract.safeMint(
-        "0x2429EB38cB9b456160937e11aefc80879a2d2712"
-      );
+      const res = await nftContract.safeMint(address);
       console.log("res", res);
     } catch (error) {
       console.log(error);
@@ -51,7 +50,7 @@ const Dashboard = ({ address, ethersProvider, bastionConnect }: any) => {
           <div className="w-full flex container justify-between items-center">
             <AccountInfo bastionConnect={bastionConnect} address={address} />
             <div className="w-0.5 h-60 bg-gray-600"></div>
-            <TransactionStatus />
+            <TransactionStatus userOpHash={userOpHash} />
           </div>
           <hr className="my-16 h-0.5 border-gray-600" />
           <div className="w-full flex container justify-between items-center h-32">

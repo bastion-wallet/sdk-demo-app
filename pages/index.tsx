@@ -16,6 +16,7 @@ import { ethers, Contract } from "ethers";
 import { Bastion } from "bastion-wallet-sdk";
 import { useState } from "react";
 import { ParticleProvider } from "@particle-network/provider";
+import Head from "next/head";
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
@@ -73,10 +74,10 @@ export default function Home() {
           rpcTarget: "https://rpc.goerli.arbitrum.gateway.fm",
         },
       });
-      const res0 = await subscribeAuthEvents(web3auth);
-      const res1 = await web3auth.initModal();
+      await subscribeAuthEvents(web3auth);
+      await web3auth.initModal();
       const web3authProvider = await web3auth.connect();
-      const res3 = await web3auth.getUserInfo();
+      await web3auth.getUserInfo();
       console.log(web3auth.provider, "rpivder");
       if (web3authProvider) {
         const tempProvider = new ethers.providers.Web3Provider(
@@ -84,17 +85,10 @@ export default function Home() {
           "any"
         );
 
-        console.log(
-          tempProvider,
-          "tempProvider",
-          await tempProvider.getSigner().getAddress()
-        );
+        setEthersProvider(tempProvider);
+        await connectBastionWallet(tempProvider);
+        setAddress(await tempProvider.getSigner().getAddress());
       }
-
-      console.log(res0, "res 0");
-      console.log(res1, "res 1");
-      // console.log(res2, "res 2");
-      console.log(res3, "res 3");
     } catch (error) {
       console.log(error);
     }
@@ -120,22 +114,15 @@ export default function Home() {
     });
   };
 
-  console.log(ethersProvider, "ethersProvider");
-
   const connectBastionWallet = async (tempProvider: any) => {
     try {
-      //Step 2 - Init the bastion signer
       const bastionConnect = await bastion.bastionConnect;
-      // const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL1);
-      // ethersProvider = new ethers.providers.Web3Provider(provider, "any");
-      // Note: need to add option here
-      // @ts-ignore
+      //@ts-ignore
       await bastionConnect.init(tempProvider, {
         privateKey: "",
         rpcUrl: "",
         chainId: 421613,
       });
-      // setEthersProvider(bastionConnect)
       setBastionConnect(bastionConnect);
     } catch (error) {
       console.log(error);
@@ -144,6 +131,9 @@ export default function Home() {
 
   return (
     <div className={`${poppins.className}`}>
+      <Head>
+        <title>Bastion Wallet | Demo Application</title>
+      </Head>
       <Header />
       {address ? (
         <Dashboard
