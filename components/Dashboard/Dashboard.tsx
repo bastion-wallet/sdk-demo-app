@@ -26,6 +26,7 @@ const Dashboard = ({ address, ethersProvider, bastionConnect }: any) => {
 
       const res = await nftContract.safeMint(address);
       console.log("res", res);
+      setUserOpHash(res?.hash);
     } catch (error) {
       console.log(error);
     }

@@ -17,14 +17,17 @@ const AccountInfo = ({ bastionConnect, address }: any) => {
           const nonce = await signer?.provider?.getTransactionCount(address);
           setSmartWalletNonce(nonce);
           const balance = await signer?.provider?.getBalance(address);
+          console.log(balance);
           if (balance) {
             const formattedBalance = ethers.utils.formatEther(balance);
             setSmartWalletBalance(formattedBalance);
           }
           setSmartWalletBalance(balance);
-          const chainName = await signer?.provider?._network?.name;
-          if (chainName) {
-            setSmartWalletChainName(chainName);
+          console.log(signer, "SIGNER");
+          const network = await signer?.provider?.getNetwork();
+          console.log(network, "network");
+          if (network) {
+            // setSmartWalletChainName(chainName);
           }
           const chainId = signer?.provider?._network?.chainId;
           if (chainId) {
