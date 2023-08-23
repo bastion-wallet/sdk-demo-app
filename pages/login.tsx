@@ -3,7 +3,7 @@ import { ParticleProvider } from "@particle-network/provider";
 import React, { useState } from "react";
 import { ethers, Contract } from "ethers";
 //@ts-ignore
-import { Bastion } from "@bastion-wallet/sdk";
+import { Bastion } from "bastion-wallet-sdk";
 
 export default function LoginPage() {
   const bastion = new Bastion();
