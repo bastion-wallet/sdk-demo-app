@@ -13,7 +13,7 @@ import { ADAPTER_EVENTS } from "@web3auth/base";
 
 import { ethers, Contract } from "ethers";
 //@ts-ignore
-import { Bastion } from "@bastion-wallet/sdk";
+import { Bastion } from "bastion-wallet-sdk";
 import { useState } from "react";
 import { ParticleProvider } from "@particle-network/provider";
 const poppins = Poppins({
