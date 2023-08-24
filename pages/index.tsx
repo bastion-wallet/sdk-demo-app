@@ -14,9 +14,10 @@ import { ADAPTER_EVENTS } from "@web3auth/base";
 import { ethers, Contract } from "ethers";
 //@ts-ignore
 import { Bastion } from "bastion-wallet-sdk";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ParticleProvider } from "@particle-network/provider";
 import Head from "next/head";
+import usePersistedState from "@/hooks/usePersistedState";
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
@@ -24,12 +25,54 @@ const poppins = Poppins({
 });
 
 export default function Home() {
-  const bastion = new Bastion();
-  const [ethersProvider, setEthersProvider] =
-    useState<ethers.providers.Web3Provider>();
-  const [address, setAddress] = useState<string>("");
-  const [bastionConnect, setBastionConnect] = useState<any>();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
+  const SDK_API_KEY = process.env.NEXT_PUBLIC_SDK_API_KEY || "";
+  const bastion = new Bastion();
+  const [ethersProvider, setEthersProvider] = usePersistedState({
+    stateName: "ethersProvider",
+    initialValue: {},
+  });
+  const [address, setAddress] = usePersistedState({
+    stateName: "address",
+    initialValue: "",
+  });
+  // const [bastionConnect, setBastionConnect] = usePersistedState({
+  //   stateName: "bastionConnect",
+  //   initialValue: {},
+  // });
+  const [bastionConnect, setBastionConnect] = useState<any>();
+  // const [ethersProvider, setEthersProvider] = useState<any>();
+
+  const connectBastionWallet = async (tempProvider: any) => {
+    try {
+      const bastionConnect = await bastion.bastionConnect;
+      //@ts-ignore
+      await bastionConnect.init(tempProvider, {
+        // privateKey: "",
+        // rpcUrl: "",
+        apiKey: SDK_API_KEY,
+        chainId: 421613,
+      });
+      console.log(bastionConnect, "bastion connect after init");
+      setBastionConnect(bastionConnect);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (address) {
+      connectBastionWallet(ethersProvider);
+    }
+  }, [address]);
+
+  if (!mounted) return <></>;
+
+  console.log(address, bastionConnect, ethersProvider);
   const loginWithParticleAuth = async () => {
     console.log("Inside the function");
 
@@ -52,10 +95,10 @@ export default function Home() {
         "any"
       );
 
+      const res = await connectBastionWallet(tempProvider);
       setEthersProvider(tempProvider);
       setAddress(await tempProvider.getSigner().getAddress());
       console.log(await tempProvider.getSigner().getAddress());
-      const res = await connectBastionWallet(tempProvider);
     } catch (e) {
       console.error(e);
     }
@@ -85,8 +128,8 @@ export default function Home() {
           "any"
         );
 
-        setEthersProvider(tempProvider);
         await connectBastionWallet(tempProvider);
+        setEthersProvider(tempProvider);
         setAddress(await tempProvider.getSigner().getAddress());
       }
     } catch (error) {
@@ -114,19 +157,9 @@ export default function Home() {
     });
   };
 
-  const connectBastionWallet = async (tempProvider: any) => {
-    try {
-      const bastionConnect = await bastion.bastionConnect;
-      //@ts-ignore
-      await bastionConnect.init(tempProvider, {
-        privateKey: "",
-        rpcUrl: "",
-        chainId: 421613,
-      });
-      setBastionConnect(bastionConnect);
-    } catch (error) {
-      console.log(error);
-    }
+  const loginWithMetamask = async () => {
+    // TODO PENDING
+    console.log("implementation pending");
   };
 
   return (
@@ -138,6 +171,7 @@ export default function Home() {
       {address ? (
         <Dashboard
           address={address}
+          setAddress={setAddress}
           ethersProvider={ethersProvider}
           bastionConnect={bastionConnect}
         />
@@ -145,6 +179,7 @@ export default function Home() {
         <Login
           loginWithParticleAuth={loginWithParticleAuth}
           loginWithWeb3Auth={loginWithWeb3Auth}
+          loginWithMetamask={loginWithMetamask}
         />
       )}
       <Footer />

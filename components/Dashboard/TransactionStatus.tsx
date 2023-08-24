@@ -10,14 +10,15 @@ const TransactionStatus = ({ userOpHash, userAction }: any) => {
         </div>
       ) : null}
       {userOpHash ? (
-        <div className="flex justify-between mb-4">
+        <div className="flex justify-between mb-4 truncate">
           <p>UserOp Hash: </p>
           <a
             href={`https://www.jiffyscan.xyz/userOpHash/${userOpHash}?network=arbitrum-goerli`}
             target="_blank"
             rel="noreferrer"
+            className="truncate"
           >
-            <p>{userOpHash}</p>
+            <p className="truncate underline">{userOpHash}</p>
           </a>
         </div>
       ) : null}
