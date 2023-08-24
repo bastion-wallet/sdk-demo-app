@@ -4,16 +4,14 @@ import AccountInfo from "./AccountInfo";
 import TransactionStatus from "./TransactionStatus";
 import { ERC721_ABI } from "../../utils/ERC721_ABI";
 const Dashboard = ({ address, setAddress, bastionConnect }: any) => {
-  console.log(bastionConnect, "BASTION CONNECT");
   const [userOpHash, setUserOpHash] = useState("");
-
+  const [txnLoading, setTxnLoading] = useState(false);
+  const [userAction, setUserAction] = useState("");
   const mintNFT = async () => {
-    console.log("clicked, passed address", address);
-    const signer = await bastionConnect.getSigner();
-
-    console.log(signer, "bastionConnect signer");
     try {
-      //Step 3 - use it like normal ethers signer / metamask signer
+      setTxnLoading(true);
+      setUserAction("Minting NFT");
+      setUserOpHash("");
       const contractAddress = "0xEAC57C1413A2308cd03eF3CEa5c9224487825341";
       const contractABI = ["function safeMint(address to) public"];
 
@@ -24,10 +22,11 @@ const Dashboard = ({ address, setAddress, bastionConnect }: any) => {
       );
 
       const res = await nftContract.safeMint(address);
-      console.log("res", res);
       setUserOpHash(res?.hash);
     } catch (error) {
       console.log(error);
+    } finally {
+      setTxnLoading(false);
     }
   };
 
@@ -38,6 +37,9 @@ const Dashboard = ({ address, setAddress, bastionConnect }: any) => {
 
   const batchTransaction = async () => {
     try {
+      setUserOpHash("");
+      setTxnLoading(true);
+      setUserAction("Executing A Batch Transaction");
       const toAddress = "0x841056F279582d1dfD586c3C77e7821821B5B510";
       const fromAddress = await bastionConnect.getAddress();
 
@@ -71,26 +73,37 @@ const Dashboard = ({ address, setAddress, bastionConnect }: any) => {
 
       const transactionArray = [transfer1, transfer2];
       const res = await bastionConnect.executeBatch(transactionArray);
+      setUserOpHash(res?.hash);
     } catch (error) {
       console.log(error);
+    } finally {
+      setTxnLoading(false);
     }
   };
 
   const sendNativeCurrency = async () => {
     try {
+      setUserOpHash("");
+      setTxnLoading(true);
+      setUserAction("Sending Native Currency");
       const tx = {
         to: "0x841056F279582d1dfD586c3C77e7821821B5B510",
         value: ethers.utils.parseEther("0.000002"),
       };
 
-      await bastionConnect.sendTransaction(tx);
+      const res = await bastionConnect.sendTransaction(tx);
+      setUserOpHash(res?.hash);
     } catch (error) {
       console.log(error);
+    } finally {
+      setTxnLoading(false);
     }
   };
 
   const onLogoutClick = async () => {
     setAddress("");
+    setUserAction("");
+    setUserOpHash("");
     localStorage.clear();
   };
 
@@ -113,7 +126,11 @@ const Dashboard = ({ address, setAddress, bastionConnect }: any) => {
           <div className="w-full flex container justify-between items-start">
             <AccountInfo bastionConnect={bastionConnect} address={address} />
             <div className="w-0.5 h-60 bg-gray-600"></div>
-            <TransactionStatus userOpHash={userOpHash} />
+            <TransactionStatus
+              userOpHash={userOpHash}
+              userAction={userAction}
+              txnLoading={txnLoading}
+            />
           </div>
           <hr className="my-16 h-0.5 border-gray-600" />
           <div className="w-full flex container justify-between items-center h-32">
